@@ -1,0 +1,21 @@
+name: Ansible Lint
+
+on:
+  push:
+    branches: [main]
+  pull-request:
+
+jobs:
+  lint:
+  runs-on: ubuntu-latest
+  steps:
+  - name: Check out the rapo
+    uses: actions/checkout@v4
+
+  - name: Install ansible-lint
+    run: pip install ansible-lint
+
+  - name: Run ansible-lint
+    run: ansible-lint
+    working-directory: aws/ansible
+
