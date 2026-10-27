@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Ansible and boto3
-        run: pip install "ansible-core~=2.16.0" boto3
+        run: pip install "ansible-core~=2.16.0" --upgrade boto3 botocore
 
       - name: Install Ansible collections
         run: ansible-galaxy collection install -r requirements.yml
@@ -32,6 +32,13 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/Ansible-practice-key.pem
           chmod 400 ~/.ssh/Ansible-practice-key.pem
+
+      - name: Fail if no servers were found
+        run: |
+          COUNT=$(ansible-inventory -i aws_ec2.yml --list | python3 -c 'import sys, json; print(len(json.load(sys.stdin).get("_meta", {}).get("hostvars", {})))')
+          echo "Found $COUNT servers"
+          test "$COUNT" -gt 0
+        working-directory: aws/ansible
 
       - name: Allow this runner to reach SSH
         run: |
