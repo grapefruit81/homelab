@@ -1,0 +1,34 @@
+---
+- name: Deploy hello-site to EC2 servers
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Docker and pip
+      ansible.builtin.dnf:
+        name:
+          - docker
+          - python3-pip
+        state: present
+
+    - name: Start and enable Docker
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Install Docker SDK for Python in a virtualenv
+      ansible.builtin.pip:
+        name: docker
+        virtualenv: /opt/docker-venv
+        virtualenv_command: python3 -m venv
+
+    - name: Run hello-site container
+      community.docker.docker_container:
+        name: hello-site
+        image: ghcr.io/grapefruit81/hello-site:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "80:80"
+      vars:
+        ansible_python_interpreter: /opt/docker-venv/bin/python
